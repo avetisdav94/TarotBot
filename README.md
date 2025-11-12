@@ -172,7 +172,7 @@
 
 ### 🎬 Попробуйте прямо сейчас!
 
-> **Telegram:** [@YourTarotBot](https://t.me/YourTarotBot) *(замените на ваш)*
+> **Telegram:** [@YourTarotBot](https://t.me/tarot94Bot)
 
 ### 🖼️ Превью функций
 
