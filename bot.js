@@ -810,16 +810,95 @@ process.on('uncaughtException', (error) => {
 process.on('SIGINT', () => {
   console.log('\n⏹️  Получен сигнал SIGINT. Останавливаем бота...');
   bot.stopPolling();
-  console.log('👋 Бот остановлен');
-  process.exit(0);
+  server.close(() => {
+    console.log('👋 HTTP сервер остановлен');
+    console.log('👋 Бот остановлен');
+    process.exit(0);
+  });
 });
 
 process.on('SIGTERM', () => {
   console.log('\n⏹️  Получен сигнал SIGTERM. Останавливаем бота...');
   bot.stopPolling();
-  console.log('👋 Бот остановлен');
-  process.exit(0);
+  server.close(() => {
+    console.log('👋 HTTP сервер остановлен');
+    console.log('👋 Бот остановлен');
+    process.exit(0);
+  });
 });
+
+// ============================================
+// HTTP СЕРВЕР ДЛЯ RENDER.COM
+// ============================================
+
+const express = require('express');
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// Главная страница
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    service: 'TarotAI Telegram Bot',
+    version: '1.0.0',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    message: '🔮 TarotAI Bot is running successfully!',
+    endpoints: {
+      status: '/status',
+      health: '/health',
+      ping: '/ping'
+    }
+  });
+});
+
+// Status endpoint
+app.get('/status', (req, res) => {
+  res.json({
+    status: 'healthy',
+    bot_running: true,
+    memory_usage: process.memoryUsage(),
+    uptime_seconds: Math.floor(process.uptime())
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// Ping endpoint
+app.get('/ping', (req, res) => {
+  res.send('pong');
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'This is a Telegram Bot. Please use Telegram to interact.'
+  });
+});
+
+// Запуск HTTP сервера
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log('\n═══════════════════════════════════════════════════');
+  console.log(`🌐 HTTP сервер запущен на порту ${PORT}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/`);
+  console.log('═══════════════════════════════════════════════════\n');
+});
+
+// Обработка ошибок сервера
+server.on('error', (error) => {
+  console.error('❌ Ошибка HTTP сервера:', error);
+});
+
+// ============================================
+// КОНЕЦ HTTP СЕРВЕРА
+// ============================================
 
 // Финальное сообщение о готовности
 console.log('✅ Бот полностью инициализирован и готов к работе!');
